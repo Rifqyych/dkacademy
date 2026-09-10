@@ -14,8 +14,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         // Force HTTPS jika di production
-        if (env('APP_ENV') === 'production') {
-            URL::forceScheme('https');
+        if (config('app.env') === 'production') {
+            URL:('https');
         }
 
         // Tambahkan alias middleware
