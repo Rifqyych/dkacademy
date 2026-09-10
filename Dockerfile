@@ -49,4 +49,4 @@ EXPOSE 80
 
 # Database migrations run before the web server starts, then FrankenPHP binds
 # to the port assigned by DockHosting.
-CMD ["sh", "-c", "php artisan migrate --force && php artisan optimize && SERVER_NAME=:${PORT:-80} exec frankenphp run --config /etc/frankenphp/Caddyfile"]
+CMD sh -c "mkdir -p /app/database /app/storage/framework/views /app/storage/framework/sessions /app/storage/framework/cache && chmod -R 777 /app/storage /app/bootstrap/cache && touch /app/database/database.sqlite && php artisan config:clear && php artisan cache:clear && php artisan migrate:fresh --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"
