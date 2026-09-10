@@ -25,17 +25,17 @@ RUN apt-get update && apt-get install -y \
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-COPY composer.json composer.lock ./
+# Copy seluruh project terlebih dahulu, supaya file artisan sudah ada
+# saat composer menjalankan hook post-autoload-dump
+COPY . .
+
+COPY --from=frontend /app/public/build ./public/build
 
 RUN composer install \
     --no-dev \
     --no-interaction \
     --no-progress \
     --optimize-autoloader
-
-COPY . .
-
-COPY --from=frontend /app/public/build ./public/build
 
 RUN mkdir -p \
     storage/framework/cache \
