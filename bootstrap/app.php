@@ -3,7 +3,8 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
-use App\Http\Middleware\AdminMiddleware; // Tambahkan ini
+use App\Http\Middleware\AdminMiddleware;
+use Illuminate\Support\Facades\URL;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,7 +13,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Tambahkan alias middleware di sini
+        // Force HTTPS jika di production
+        if (env('APP_ENV') === 'production') {
+            URL::forceScheme('https');
+        }
+
+        // Tambahkan alias middleware
         $middleware->alias([
             'admin' => AdminMiddleware::class,
         ]);
