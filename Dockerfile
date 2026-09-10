@@ -26,6 +26,5 @@ RUN chown -R www-data:www-data storage bootstrap/cache
 
 # Laravel must be served from /public
 ENV SERVER_ROOT=/app/public
-ENV SERVER_NAME=:80
 
-CMD ["frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile"]
+CMD ["sh", "-c", "SERVER_NAME=:$PORT exec frankenphp run --config /etc/frankenphp/Caddyfile"]
