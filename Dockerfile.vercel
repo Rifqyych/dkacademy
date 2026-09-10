@@ -2,23 +2,19 @@ FROM dunglas/frankenphp:1-php8.2
 
 WORKDIR /app
 
-# Install dependencies required by Composer
+# PHP extensions and Composer dependencies
 RUN apt-get update && apt-get install -y \
     unzip \
     libzip-dev \
     && docker-php-ext-install zip \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copy Laravel project
 COPY . .
 
-# Install Laravel dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Prepare Laravel directories
 RUN mkdir -p \
     storage/framework/cache \
     storage/framework/sessions \
@@ -26,9 +22,10 @@ RUN mkdir -p \
     storage/logs \
     bootstrap/cache
 
-# Set permissions
 RUN chown -R www-data:www-data storage bootstrap/cache
 
+# Laravel must be served from /public
+ENV SERVER_ROOT=/app/public
 ENV SERVER_NAME=:80
 
 CMD ["frankenphp", "run", "--config", "/etc/frankenphp/Caddyfile"]
