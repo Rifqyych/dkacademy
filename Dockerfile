@@ -43,10 +43,10 @@ RUN composer dump-autoload --no-dev --optimize --no-interaction \
     && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 
-# DockHosting sends the runtime port through PORT.
+# DockHosting sends the runtime port through PORT. Its proxy uses port 80.
 ENV SERVER_ROOT=/app/public
-EXPOSE 8080
+EXPOSE 80
 
 # Database migrations run before the web server starts, then FrankenPHP binds
 # to the port assigned by DockHosting.
-CMD ["sh", "-c", "php artisan migrate --force && php artisan optimize && SERVER_NAME=0.0.0.0:${PORT:-8080} exec frankenphp run --config /etc/frankenphp/Caddyfile"]
+CMD ["sh", "-c", "php artisan migrate --force && php artisan optimize && SERVER_NAME=:${PORT:-80} exec frankenphp run --config /etc/frankenphp/Caddyfile"]
