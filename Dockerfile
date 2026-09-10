@@ -12,43 +12,38 @@ COPY vite.config.js ./
 RUN npm run build
 
 
-FROM dunglas/frankenphp:1-php8.2
+FROM dunglas/frankenphp:1-php8.2-bookworm
 
 WORKDIR /app
 
-# PHP extensions: zip (for Laravel) + pdo_pgsql (database Postgres di Coolify)
-RUN apt-get update && apt-get install -y \
-    unzip \
-    libzip-dev \
-    libpq-dev \
-    && docker-php-ext-install zip pdo_pgsql \
-    && rm -rf /var/lib/apt/lists/*
+# Laravel uses PostgreSQL on DockHosting. The official FrankenPHP installer
+# resolves the OS libraries required by each PHP extension.
+RUN install-php-extensions pdo_pgsql zip opcache \
+    && cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copy seluruh project dulu, supaya file artisan sudah ada
-# saat composer menjalankan hook post-autoload-dump
-COPY . .
-
-# Timpa dengan hasil build asset dari stage frontend
-COPY --from=frontend /app/public/build ./public/build
-
+# Install production dependencies before application code for efficient caching.
+COPY composer.json composer.lock ./
 RUN composer install \
     --no-dev \
+    --no-scripts \
     --no-interaction \
     --no-progress \
+    --prefer-dist \
     --optimize-autoloader
 
-RUN mkdir -p \
-    storage/framework/cache \
-    storage/framework/sessions \
-    storage/framework/views \
-    storage/logs \
-    bootstrap/cache
+COPY . .
+COPY --from=frontend /app/public/build ./public/build
 
-RUN chown -R www-data:www-data storage bootstrap/cache
+RUN composer dump-autoload --no-dev --optimize --no-interaction \
+    && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache
 
-# Laravel must be served from /public
+# DockHosting sends the runtime port through PORT.
 ENV SERVER_ROOT=/app/public
+EXPOSE 8080
 
-CMD ["sh", "-c", "SERVER_NAME=:$PORT exec frankenphp run --config /etc/frankenphp/Caddyfile"]
+# Database migrations run before the web server starts, then FrankenPHP binds
+# to the port assigned by DockHosting.
+CMD ["sh", "-c", "php artisan migrate --force && php artisan optimize && SERVER_NAME=0.0.0.0:${PORT:-8080} exec frankenphp run --config /etc/frankenphp/Caddyfile"]
