@@ -16,10 +16,13 @@ FROM dunglas/frankenphp:1-php8.2-bookworm
 
 WORKDIR /app
 
-# Laravel uses PostgreSQL on DockHosting. The official FrankenPHP installer
-# resolves the OS libraries required by each PHP extension.
-RUN install-php-extensions pdo_pgsql zip opcache \
-    && cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
+# Use the bundled PHP extension compiler. This avoids the m4 failure that can
+# occur in DockHosting's BuildKit environment with install-php-extensions.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libpq-dev libzip-dev unzip \
+    && docker-php-ext-install pdo_pgsql zip \
+    && cp "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
