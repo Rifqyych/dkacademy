@@ -43,10 +43,11 @@ RUN composer dump-autoload --no-dev --optimize --no-interaction \
     && mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache
 
-# DockHosting sends the runtime port through PORT. Its proxy uses port 80.
+# Railway injects PORT at runtime. SERVER_ROOT keeps Laravel's public folder
+# as the only web-accessible directory.
 ENV SERVER_ROOT=/app/public
-EXPOSE 80
+EXPOSE 8080
 
-# Database migrations run before the web server starts, then FrankenPHP binds
-# to the port assigned by DockHosting.
-CMD sh -c "mkdir -p /app/database /app/storage/framework/views /app/storage/framework/sessions /app/storage/framework/cache && chmod -R 777 /app/storage /app/bootstrap/cache && touch /app/database/database.sqlite && php artisan config:clear && php artisan cache:clear && php artisan migrate:fresh --force && php artisan serve --host=0.0.0.0 --port=${PORT:-8080}"
+# Migrations are executed by Railway's pre-deploy command. Do not run
+# migrate:fresh here: it would erase production data on every deployment.
+CMD ["sh", "-c", "mkdir -p storage/framework/views storage/framework/sessions storage/framework/cache storage/logs && chmod -R ug+rwX storage bootstrap/cache && SERVER_NAME=:${PORT:-8080} exec frankenphp run --config /etc/frankenphp/Caddyfile"]
