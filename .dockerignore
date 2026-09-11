@@ -17,6 +17,10 @@ storage/framework/cache
 storage/framework/sessions
 storage/framework/views
 
+# Never copy machine-specific Laravel caches into a production image.
+bootstrap/cache/*
+!bootstrap/cache/.gitignore
+
 tests
 README.md
 DEPLOYMENT.md

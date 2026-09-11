@@ -50,4 +50,4 @@ EXPOSE 8080
 
 # Migrations are executed by Railway's pre-deploy command. Do not run
 # migrate:fresh here: it would erase production data on every deployment.
-CMD ["sh", "-c", "mkdir -p storage/framework/views storage/framework/sessions storage/framework/cache storage/logs && chmod -R ug+rwX storage bootstrap/cache && SERVER_NAME=:${PORT:-8080} exec frankenphp run --config /etc/frankenphp/Caddyfile"]
+CMD ["sh", "-c", "mkdir -p storage/framework/views storage/framework/sessions storage/framework/cache storage/logs && chmod -R ug+rwX storage bootstrap/cache && php artisan config:clear && SERVER_NAME=:${PORT:-8080} exec frankenphp run --config /etc/frankenphp/Caddyfile"]

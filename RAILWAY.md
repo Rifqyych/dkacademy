@@ -27,8 +27,9 @@ WHATSAPP_ADMIN_PHONE=6281210669659
 ```
 
 Use the actual PostgreSQL service name in the `DATABASE_URL` reference if it
-is not named `Postgres`. Generate a public domain in the Railway Networking
-settings after the first successful deployment.
+is not named `Postgres`. The `DATABASE_URL` reference must appear in the
+Laravel service, not only in the PostgreSQL service. Generate a public domain
+in the Railway Networking settings after the first successful deployment.
 
 Do not add `.env` to Git or upload it to the repository. Keep `APP_KEY` the
 same across deployments so existing encrypted sessions remain valid.
