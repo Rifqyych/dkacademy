@@ -15,11 +15,24 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Akun admin (untuk login ke /admin/dashboard)
+        User::updateOrCreate(
+            ['email' => 'admin@dkacademy.test'],
+            [
+                'name' => 'Admin DK Academy',
+                'password' => bcrypt('admin123'),
+                'role' => 'admin',
+            ]
+        );
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        // Akun user biasa (untuk login biasa, tidak bisa akses /admin)
+        User::updateOrCreate(
+            ['email' => 'user@dkacademy.test'],
+            [
+                'name' => 'User Biasa',
+                'password' => bcrypt('user123'),
+                'role' => 'user',
+            ]
+        );
     }
 }
